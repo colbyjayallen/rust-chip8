@@ -1,35 +1,62 @@
-use std::fs::File;
+use std::io;
 
 fn main()
 {
-
     //Globals
-    let mut memory:[u8; 4096] = ;
-    let mut variable_register:[u8; 16] = [0; 16];
-    let mut stack: Vec<u16> = Vec::new(); // Use pop and push on the stack.
-    let mut index_register: u16;
-    let mut delay_timer: u8;
-    let mut sound_timer: u8;
+    let mut _memory:[u8; 4096] = initialize_memory().unwrap();
+    let mut _variable_register:[u8; 16] = [0; 16];
+    let mut _stack: Vec<u16> = Vec::new(); // Use pop and push on the stack.
+    let mut program_counter: usize = 0x200;
+    let mut _index_register: u16;
+    let mut _delay_timer: u8;
+    let mut _sound_timer: u8;
 
     loop {
         // Fetch
+        
         // Decode
         // Execute
         break;
     }
 }
 
-/**
- * Find a way to automate this based on taking input from a CSV
- **/
-fn initialize_memory(rom_path: &str) -> [u8; 4096]
+
+fn initialize_memory() -> io::Result<[u8; 4096]>
 {
     let mut temp_memory:[u8; 4096] = [0; 4096];
-    let mut index: u8 = 0x050;
-    
-}
 
-fn load_rom(rom_path: &str) -> [u8; 4096] {
-    println!("Loading rom...");
+    // Load fonts
+    let fonts:[u8; 80] = [
+        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+        0x20, 0x60, 0x20, 0x20, 0x70, // 1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+        0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+    ];
 
+    for (i,j) in (0x050..0x0A0).enumerate() {
+        temp_memory[j as usize] = fonts[i];
+    }
+
+    // Load in Game to memory
+    let bytes = std::fs::read("./assets/BC_test.ch8")?;
+    let mut index: u16 = 0x200;
+
+    for byte in &bytes {
+        temp_memory[index as usize] = *byte;
+        index += 1;
+    }
+
+    Ok(temp_memory)
 }
