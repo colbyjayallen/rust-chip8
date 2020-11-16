@@ -1,9 +1,10 @@
 [package]
 name = "chip8"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Colby Allen <colbyjayallen@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+sfml = "0.15.1"

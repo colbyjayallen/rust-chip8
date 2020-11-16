@@ -3,7 +3,7 @@ use std::io;
 fn main()
 {
     //Globals
-    let mut _memory:[u8; 4096] = initialize_memory().unwrap();
+    let mut memory:[u8; 4096] = initialize_memory().unwrap();
     let mut _variable_register:[u8; 16] = [0; 16];
     let mut _stack: Vec<u16> = Vec::new(); // Use pop and push on the stack.
     let mut program_counter: usize = 0x200;
@@ -13,10 +13,21 @@ fn main()
 
     loop {
         // Fetch
-        
+        let instruction: u16 = get_next_instruction(&mut program_counter, &memory);
+
         // Decode
+        let decoded: (u8, u8, u8, u8) = generate_nibble_tuple(instruction);
+
         // Execute
-        break;
+        match decoded {
+            (0, 0, 0xE, 0) => println!("Clear screen"),
+            (0x1, ..) => println!("Jump"),
+            (0x6, ..) => println!("Set Register of second nibble to third and fourth."),
+            (0x7, ..) => println!("add value to register VX"),
+            (0xA, ..) => println!("set index register I"),
+            (0xD, ..) => println!("display/draw"),
+            _ => println!("Could not parse instruction...")
+        }
     }
 }
 
@@ -59,4 +70,23 @@ fn initialize_memory() -> io::Result<[u8; 4096]>
     }
 
     Ok(temp_memory)
+}
+
+fn get_next_instruction(index: &mut usize, memory: &[u8; 4096]) -> u16 {
+    let first_byte: u16 = memory[*index] as u16;
+    let second_byte: u16 = memory[*index + 1] as u16;
+    let result: u16 = (first_byte << 8) + second_byte;
+
+    *index += 2; // Increment Program Counter by two
+
+    result
+}
+
+fn generate_nibble_tuple(instruction: u16) -> (u8, u8, u8, u8) {
+    let first_nibble = ((instruction & 0xF000) >> 12) as u8;
+    let second_nibble = ((instruction & 0x0F00) >> 8) as u8;
+    let third_nibble = ((instruction & 0x00F0) >> 4) as u8;
+    let fourth_nibble = ((instruction & 0x000F)) as u8;
+
+    (first_nibble, second_nibble, third_nibble, fourth_nibble)
 }
