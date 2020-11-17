@@ -4,10 +4,10 @@ fn main()
 {
     //Globals
     let mut memory:[u8; 4096] = initialize_memory().unwrap();
-    let mut _variable_register:[u8; 16] = [0; 16];
+    let mut variable_register:[u8; 16] = [0; 16];
     let mut _stack: Vec<u16> = Vec::new(); // Use pop and push on the stack.
     let mut program_counter: usize = 0x200;
-    let mut _index_register: u16;
+    let mut index_register: u16;
     let mut _delay_timer: u8;
     let mut _sound_timer: u8;
 
@@ -22,11 +22,20 @@ fn main()
         match decoded {
             (0, 0, 0xE, 0) => println!("Clear screen"),
             (0x1, ..) => println!("Jump"),
-            (0x6, ..) => println!("Set Register of second nibble to third and fourth."),
+            (0x6, ..) => {
+                let mut register_value: u8 = variable_register[decoded.1 as usize];
+                let updated_value: u8 = generate_last_byte(decoded.2, decoded.3);
+                //println!("Initial value of V{}: {}", decoded.1, register_value);
+                op_code_0x6XNN(updated_value, &mut register_value);
+                //println!("Final value of V{}: {}", decoded.1, register_value);
+            },
             (0x7, ..) => println!("add value to register VX"),
             (0xA, ..) => println!("set index register I"),
             (0xD, ..) => println!("display/draw"),
-            _ => println!("Could not parse instruction...")
+            _ => {
+                println!("Could not parse instruction...");
+                break;
+            }
         }
     }
 }
@@ -61,7 +70,7 @@ fn initialize_memory() -> io::Result<[u8; 4096]>
     }
 
     // Load in Game to memory
-    let bytes = std::fs::read("./assets/BC_test.ch8")?;
+    let bytes = std::fs::read("./assets/IBM_Logo.ch8")?;
     let mut index: u16 = 0x200;
 
     for byte in &bytes {
@@ -89,4 +98,20 @@ fn generate_nibble_tuple(instruction: u16) -> (u8, u8, u8, u8) {
     let fourth_nibble = ((instruction & 0x000F)) as u8;
 
     (first_nibble, second_nibble, third_nibble, fourth_nibble)
+}
+
+fn generate_last_byte(first_nibble: u8, second_nibble: u8) -> u8 {
+    (first_nibble << 4) + second_nibble
+}
+
+fn get_tribble(first_nibble: u8, second_nibble: u8, third_nibble: u8) -> u16 {
+    
+}
+
+fn op_code_0x6XNN(new_value: u8, register_value: &mut u8) {
+    *register_value = new_value;
+}
+
+fn op_code_0xANNN(new_value: u16, index_register: &mut u16) {
+    *index_register = new_value;
 }
