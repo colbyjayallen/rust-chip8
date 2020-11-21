@@ -1,5 +1,7 @@
 use std::io;
 
+mod chip8;
+
 fn main()
 {
     //Globals
@@ -25,9 +27,7 @@ fn main()
             (0x6, ..) => {
                 let mut register_value: u8 = variable_register[decoded.1 as usize];
                 let updated_value: u8 = generate_last_byte(decoded.2, decoded.3);
-                //println!("Initial value of V{}: {}", decoded.1, register_value);
-                op_code_0x6XNN(updated_value, &mut register_value);
-                //println!("Final value of V{}: {}", decoded.1, register_value);
+                chip8::helpers::opcode::op_0x6XNN(updated_value, &mut register_value);
             },
             (0x7, ..) => println!("add value to register VX"),
             (0xA, ..) => println!("set index register I"),
@@ -105,13 +105,5 @@ fn generate_last_byte(first_nibble: u8, second_nibble: u8) -> u8 {
 }
 
 fn get_tribble(first_nibble: u8, second_nibble: u8, third_nibble: u8) -> u16 {
-    
-}
-
-fn op_code_0x6XNN(new_value: u8, register_value: &mut u8) {
-    *register_value = new_value;
-}
-
-fn op_code_0xANNN(new_value: u16, index_register: &mut u16) {
-    *index_register = new_value;
+    32
 }
