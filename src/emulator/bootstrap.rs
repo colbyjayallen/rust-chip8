@@ -1,4 +1,4 @@
-use std::io;
+use std::io::Result;
 
 pub fn initalize_memory() -> [u8; 4096] {
     let result = try_initialize_memory();
@@ -9,12 +9,12 @@ pub fn initalize_memory() -> [u8; 4096] {
         },
         Err(n) => {
             eprintln!("COULD NOT READ ROM INTO MEMORY");
-            [0; 4096]
+            panic!("Error: '{}'", n);
         }
     }
 }
 
-fn try_initialize_memory() -> io::Result<[u8; 4096]>
+fn try_initialize_memory() -> Result<[u8; 4096]>
 {
     let mut temp_memory:[u8; 4096] = [0; 4096];
 
@@ -44,10 +44,10 @@ fn try_initialize_memory() -> io::Result<[u8; 4096]>
 
     // Load in Game to memory
     let bytes = std::fs::read("./assets/IBM_Logo.ch8")?; //TODO Currently harcoded in ROM value
-    let mut index: u16 = 0x200;
+    let mut index: usize = 0x200;
 
     for byte in &bytes {
-        temp_memory[index as usize] = *byte;
+        temp_memory[index] = *byte;
         index += 1;
     }
 

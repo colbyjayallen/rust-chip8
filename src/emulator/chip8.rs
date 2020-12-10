@@ -1,3 +1,4 @@
+use std::io::Result;
 use super::bootstrap;
 use super::bit_helpers;
 
@@ -56,7 +57,17 @@ impl Chip8 {
         let decoded: (u8, u8, u8, u8) = (a, b, c, d);
         match decoded {
             (0, 0, 0xE, 0) => println!("Clear screen"),
-            (0x1, ..) => println!("Jump"),
+            (0, 0, 0xE, 0xE) => {
+                Chip8::op_00ee(self);
+            },
+            (0x1, ..) => {
+                let new_value: u16 = bit_helpers::get_tribble(decoded);
+                Chip8::op_1nnn(self, new_value);
+            },
+            (0x2, ..) => {
+                let new_program_counter: usize = bit_helpers::get_tribble(decoded) as usize;
+                Chip8::op_2nnn(self, new_program_counter);
+            },
             (0x6, ..) => {
                 let new_value: u8 = bit_helpers::generate_last_byte(decoded);
                 Chip8::op_6xnn(self, new_value, decoded.1 as usize);
@@ -80,6 +91,20 @@ impl Chip8 {
     /// OPCODE FUNCTIONS
     ///
 
+    fn op_00ee(&mut self) {
+        let result: u16 = Chip8::try_stack_pop(self);
+        self.program_counter = result as usize;
+    }
+
+    fn op_1nnn(&mut self, new_value: u16) {
+        self.program_counter = new_value as usize;
+    }
+
+    fn op_2nnn(&mut self, new_program_counter: usize) {
+        self.stack.push(self.program_counter as u16);
+        self.program_counter = new_program_counter;
+    }
+
     fn op_6xnn(&mut self, new_value: u8, register_index: usize) {
         self.variable_register[register_index] = new_value;
     }
@@ -91,6 +116,18 @@ impl Chip8 {
 
     fn op_annn(&mut self, new_value: u16) {
         self.index_register = new_value;
+    }
+
+    fn try_stack_pop(&mut self) -> u16 {
+        let pointer = self.stack.pop();
+        match pointer {
+            Some(pointer) => {
+                pointer
+            },
+            None => {
+                panic!("Failed to extract pointer from Stack!");
+            }
+        }
     }
 
 }
